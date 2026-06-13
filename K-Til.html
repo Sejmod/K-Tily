@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кыргыз тили: Уникалдуу тест</title>
+    
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --correct: #10b981;
+            --incorrect: #ef4444;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 10px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: none;
+            flex-direction: column;
+        }
+
+        .card.active {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .quiz-info {
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:active { background-color: var(--primary-hover); }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+        }
+
+        #progress-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .progress-bar {
+            background: var(--border);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .timer {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        #question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .option {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            padding: 14px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            font-family: inherit;
+            line-height: 1.3;
+            transition: all 0.2s ease;
+        }
+
+        .option.correct-answer {
+            border-color: var(--correct) !important;
+            background-color: #ecfdf5 !important;
+            color: #065f46 !important;
+            font-weight: 600;
+        }
+
+        .option.wrong-answer {
+            border-color: var(--incorrect) !important;
+            background-color: #fef2f2 !important;
+            color: #991b1b !important;
+        }
+
+        .option.disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .quiz-footer {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        #result-screen {
+            align-items: center;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 6px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        #score-percentage {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        #score-absolute {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .result-message {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .analytic-card {
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .analytic-card.correct { background: #ecfdf5; color: var(--correct); }
+        .analytic-card.incorrect { background: #fef2f2; color: var(--incorrect); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Экран Старта -->
+        <div id="start-screen" class="card active">
+            <h1>Кыргыз тили: Акылдуу тест</h1>
+            <p class="subtitle">Кайталанбаган суроолор режими</p>
+            <div class="quiz-info">
+                <div class="info-item"><span>Базадагы суроолор:</span> <strong>100 суроо</strong></div>
+                <div class="info-item"><span>Калган суроолор:</span> <strong id="remaining-count">100</strong></div>
+                <div class="info-item"><span>Бул циклде берилет:</span> <strong>20 суроо</strong></div>
+                <div class="info-item"><span>Убакыт узактыгы:</span> <strong>10 мүнөт</strong></div>
+            </div>
+            <button id="start-btn" class="btn btn-primary">Циклди баштоо</button>
+        </div>
+
+        <!-- Экран Вопросов -->
+        <div id="quiz-screen" class="card">
+            <div class="quiz-header">
+                <div class="progress-container">
+                    <span id="progress-text">Суроо 1 / 20</span>
+                    <div class="progress-bar"><div id="progress-fill"></div></div>
+                </div>
+                <div id="timer" class="timer">10:00</div>
+            </div>
+
+            <div class="question-container">
+                <h2 id="question-text">Жүктөлүүдө...</h2>
+                <div id="options-container" class="options-grid"></div>
+            </div>
+
+            <div class="quiz-footer">
+                <button id="next-btn" class="btn btn-primary" disabled>Кийинки суроо</button>
+            </div>
+        </div>
+
+        <!-- Экран Результатов -->
+        <div id="result-screen" class="card">
+            <h2>Циклдин жыйынтыгы</h2>
+            <div class="score-circle">
+                <span id="score-percentage">0%</span>
+                <p id="score-absolute">0 / 20</p>
+            </div>
+            <div id="result-message" class="result-message"></div>
+            
+            <div class="analytics-grid">
+                <div class="analytic-card correct">
+                    <span>Туура:</span>
+                    <span id="stat-correct">0</span>
+                </div>
+                <div class="analytic-card incorrect">
+                    <span>Ката:</span>
+                    <span id="stat-wrong">0</span>
+                </div>
+            </div>
+
+            <button id="restart-btn" class="btn btn-primary" style="width: 100%;">Кийинки жаңы цикл</button>
+        </div>
+    </div>
+
+    <script>
+        // ПОЛНАЯ БАЗА ИЗ 100 УНИКАЛЬНЫХ ВОПРОСОВ
+        const allQuestionsBank = [
+            { id: 1, question: "Тилдин тыбыштык түзүлүшүн изилдөөчү илим?", options: { a: "Морфология", b: "Фонетика", c: "Синтаксис", d: "Лексика" }, correct: "b" },
+            { id: 2, question: "Сүйлөө органдары деген эмне?", options: { a: "Тыбыштарды белгилөө үчүн алынган белгилер", b: "Адамдын тыбыш жасоого катышуучу дене мүчөлөрү", c: "Угулган айрым үндөр", d: "Пикир алышуу каражаты" }, correct: "b" },
+            { id: 3, question: "Жаактын ачылышына карай үндүүлөр канчага бөлүнөт?", options: { a: "Кең, кууш", b: "Жоон, ичке", c: "Эринчил, эринсиз", d: "Кыска, созулма" }, correct: "a" },
+            { id: 4, question: "Үнсүз тыбыштар жасалуу ордуна карай кандай бөлүнөт?", options: { a: "Каталаң, жумшак", b: "Жарылма, жылчыкчыл", c: "Уччул, орточул, түпчүл, кош эринчил", d: "Эринчил, тишчил" }, correct: "c" },
+            { id: 5, question: "Кыргыз тилинде канча тамга бар?", options: { a: "34", b: "36", c: "39", d: "33" }, correct: "b" },
+            { id: 6, question: "Кыргыз тилинде канча тыбыш бар?", options: { a: "36", b: "39", c: "34", d: "40" }, correct: "b" },
+            { id: 7, question: "Созулма үндүүлөр катышкан сөздү тапкыла:", options: { a: "Китеп", b: "Жазуу", c: "Тоо", d: "Мектеп" }, correct: "c" },
+            { id: 8, question: "Кыргыз тилиндеги созулма үндүүлөрдүн саны:", options: { a: "4", b: "6", c: "8", d: "5" }, correct: "b" },
+            { id: 9, question: "Синоним сөздөр деген эмне?", options: { a: "Айтылышы бирдей, мааниси башка", b: "Мааниси карама-каршы", c: "Айтылышы ар башка, мааниси бирдей", d: "Жазылышы ар башка, мааниси ар башка" }, correct: "c" },
+            { id: 10, question: "Антоним сөздөрдү тапкыла:", options: { a: "Бийик - жапыз", b: "Адам - киши", c: "Сулуу - кооз", d: "Баш - аяк" }, correct: "a" },
+            { id: 11, question: "Омоним сөздөр кайсылар?", options: { a: "Айтылышы бир, мааниси башка", b: "Мааниси бир, айтылышы башка", c: "Карама-каршы сөздөр", d: "Синонимдердин түрү" }, correct: "a" },
+            { id: 12, question: "Зат атоочтун суроолору:", options: { a: "Кандай? Кайсы?", b: "Ким? Эмне?", c: "Канча? Нече?", d: "Эмне кылды?" }, correct: "b" },
+            { id: 13, question: "Сын атоочту тапкыла:", options: { a: "Кызыл", b: "Баруу", c: "Төрт", d: "Китеп" }, correct: "a" },
+            { id: 14, question: "Сан атооч кайсы суроого жооп берет?", options: { a: "Кимдин?", b: "Канча? Нече?", c: "Кандай?", d: "Эмне үчүн?" }, correct: "b" },
+            { id: 15, question: "Этиш деген эмне?", options: { a: "Заттын атын билдирет", b: "Заттын санын билдирет", c: "Заттын кыймыл-аракетин билдирет", d: "Заттын өңүн билдирет" }, correct: "c" },
+            { id: 16, question: "Сүйлөмдүн баш мүчөлөрү кайсылар?", options: { a: "Ээ жана баяндооч", b: "Аныктооч жана толуктооч", c: "Бышыктооч жана ээ", d: "Баяндооч жана аныктооч" }, correct: "a" },
+            { id: 17, question: "Муундун канча түрү бар?", options: { a: "2", b: "3", c: "4", d: "5" }, correct: "b" },
+            { id: 18, question: "Ачык муун кандай тыбыш менен аяктайт?", options: { a: "Үнсүз", b: "Үндүү", c: "Каткалаң", d: "Уяң" }, correct: "b" },
+            { id: 19, question: "Жабык муун кандай тыбыш менен аяктайт?", options: { a: "Үндүү", b: "Үнсүз", c: "Созулма", d: "Жоон" }, correct: "b" },
+            { id: 20, question: "Кыргыз алфавитинде канча үндүү тамга бар?", options: { a: "14", b: "12", c: "10", d: "8" }, correct: "a" },
+            { id: 21, question: "Кыргыз тили кайсы тилдер үй-бүлөсүнө кирет?", options: { a: "Индо-европа", b: "Фин-угор", c: "Түрк", d: "Славян" }, correct: "c" },
+            { id: 22, question: "Диалектилик сөздөр деген эмне?", options: { a: "Бардык адамдар түшүнгөн сөздөр", b: "Белгилүү бир аймакта гана колдонулган сөздөр", c: "Эскирип кеткен сөздөр", d: "Жаңы пайда болгон сөздөр" }, correct: "b" },
+            { id: 23, question: "Неологизмдер кайсылар?", options: { a: "Кесиптик сөздөр", b: "Эскирген сөздөр", c: "Тилге жаңыдан кирген сөздөр", d: "Өтмө маанидеги сөздөр" }, correct: "c" },
+            { id: 24, question: "Архаизмдер (эскирген сөздөр) катышкан катарды тапкыла:", options: { a: "Болуш, бий, кан", b: "Компьютер, интернет", c: "Мектеп, китеп", d: "Ата-эне, бала" }, correct: "a" },
+            { id: 25, question: "Белгилүү бир кесип ээлери гана колдонгон сөздөр эмне деп аталат?", options: { a: "Неологизмдер", b: "Диалектилер", c: "Терминдер (Кесиптик сөздөр)", d: "Омонимдер" }, correct: "c" },
+            { id: 26, question: "Макал менен лакаптын негизги айырмасы эмнеде?", options: { a: "Айырмасы жок", b: "Макалда жыйынтыктуу ой, так тыянак берилет", c: "Лакап ыр түрүндө гана болот", d: "Макал жалаң гана жаныбарлар жөнүндө болот" }, correct: "b" },
+            { id: 27, question: "Фразеологизм деген эмне?", options: { a: "Мааниси бири-бирине жакын сөздөр", b: "Эки же андан көп сөздөн куралган туруктуу сөз айкашы", c: "Жаңы сөздөр", d: "Жазылышы окшош сөздөр" }, correct: "b" },
+            { id: 28, question: "«Кой оозунан чөп албаган» фразеологизминин маанисин тапкыла:", options: { a: "Жалкоо", b: "Ууру", c: "Абдан жоош, момун", d: "Ачуулуу" }, correct: "c" },
+            { id: 29, question: "«Ийне менен кудук казгандай» фразеологизминин мааниси:", options: { a: "Өтө татаал, кыйын жана түйшүктүү", b: "Оңой, тез", c: "Керексиз жумуш", d: "Пайдалуу иш" }, correct: "a" },
+            { id: 30, question: "Зат атоочтун жөндөмөлөрү канча?", options: { a: "4", b: "5", c: "6", d: "7" }, correct: "c" },
+            { id: 31, question: "Илик жөндөмөсүнүн мүчөсү кайсы?", options: { a: "-га, -ге", b: "-нын, -нин", c: "-ны, -ни", d: "-дан, -ден" }, correct: "b" },
+            { id: 32, question: "Барыш жөндөмөсүнүн суроолору кайсылар?", options: { a: "Кимдин? Эмненин?", b: "Кимде? Эмнеде?", c: "Кимге? Эмнеге? Кайда?", d: "Кимден? Эмнеден?" }, correct: "c" },
+            { id: 33, question: "Жатыш жөндөмөсүнүн мүчөсү кайсы?", options: { a: "-да, -де, -до, -дө", b: "-дан, -ден, -дон, -дөн", c: "-га, -ге, -го, -гө", d: "-ды, -ди, -du, -дү" }, correct: "a" },
+            { id: 34, system: "ignore", question: "Сын атоочтун даражалары канчага бөлүнөт?", options: { a: "2", b: "3", c: "4", d: "5" }, correct: "c" },
+            { id: 35, question: "Салыштырма даражанын мүчөсү кайсы?", options: { a: "-гылт", b: "-раак, -рөөк", c: "-ма", d: "-дай" }, correct: "b" },
+            { id: 36, question: "Эсептик сан атоочтун суроосу кайсы?", options: { a: "Канчанчы?", b: "Канча? Нече?", c: "Канчоо?", d: "Канчадан?" }, correct: "b" },
+            { id: 37, question: "Иреттик сан атоочту уюштуруучу мүчө:", options: { a: "-нчы, -инчи", b: "-оо, -өө", c: "-дай, -дой", d: "-дан, -ден" }, correct: "a" },
+            { id: 38, question: "Жамдооч сан атоочтор катышкан катарды тапкыла:", options: { a: "Беш, он, жүз", b: "Бирөө, экөө, үчөө", c: "Биринчи, экинчи", d: "Оңдой, жүздөгөн" }, correct: "b" },
+            { id: 39, question: "«Мен, сен, ал» – булар кайсы ат атоочтор?", options: { a: "Шилтеме", b: "Сурама", c: "Жиктеме", d: "Өздүк" }, correct: "c" },
+            { id: 40, question: "Көптүк түрдү уюштуруучу мүчөлөр кайсылар?", options: { a: "-лар, -дар, -тар", b: "-нын, -нин", c: "-га, -ге", d: "-мын, -сың" }, correct: "a" },
+            { id: 41, question: "Этиштин чактары канчага бөлүнөт?", options: { a: "2", b: "3", c: "4", d: "5" }, correct: "b" },
+            { id: 42, question: "Келер чактын түрлөрү кайсылар?", options: { a: "Айкын жана күдүк", b: "Тике жана арсар", c: "Азыркы жана мурунку", d: "Көнүмүш жана күдүк" }, correct: "b" },
+            { id: 43, question: "Этиштин ыңгайлары канча?", options: { a: "3", b: "4", c: "5", d: "6" }, correct: "c" },
+            { id: 44, question: "Буйрук ыңгайдагы этишти тапкыла:", options: { a: "Окуп жатат", b: "Окуду", c: "Бар, кел, оку", d: "Барсакпы" }, correct: "c" },
+            { id: 45, question: "Шарттуу ыңгайдын мүчөсү кайсы?", options: { a: "-мак", b: "-са", c: "-айын", d: "-гыла" }, correct: "b" },
+            { id: 46, question: "Сүйлөм айтылыш максатына карай кандай бөлүнөт?", options: { a: "Жөнөкөй, татаал", b: "Жай, суроолуу, илептүү, буйрук", c: "Жалаң, жайылма", d: "Толук, кемтик" }, correct: "b" },
+            { id: 47, question: "Жай сүйлөмдүн аягына кандай тыныш белгиси коюлат?", options: { a: "Суроо белгиси", b: "Илеп белгиси", c: "Чекит", d: "Үтүр" }, correct: "c" },
+            { id: 48, question: "Сүйлөмдүн баш мүчөлөрүн тапкыла:", options: { a: "Аныктооч жана толуктооч", b: "Ээ жана баяндооч", c: "Бышыктооч жана ээ", d: "Баяндооч жана аныктооч" }, correct: "b" },
+            { id: 49, question: "Сүйлөмдүн айкындооч мүчөлөрү кайсылар?", options: { a: "Ээ, баяндооч", b: "Аныктооч, толуктооч, бышыктооч", c: "Сөз айкаштары", d: "Киринди сөздөр" }, correct: "b" },
+            { id: 50, question: "Аныктоочтун алды кандай сызылат?", options: { a: "Түз сызык", b: "Эки түз сызык", c: "Толкун сызык", d: "Үзүк-үзүк чекит" }, correct: "c" },
+            { id: 51, question: "Бышыктоочтун алды кандай сызылат?", options: { a: "Толкун сызык", b: "Чекит-сызыкча (үзүк-үзүк чекит)", c: "Бир түз сызык", d: "Үзүк сызык" }, correct: "b" },
+            { id: 52, question: "Сөз айкашы деген эмне?", options: { a: "Сүйлөмдүн башталышы", b: "Эки же андан көп толук маанилүү сөздөрдүн маанилик жана грамматикалык байланышы", c: "Бир гана сөздөн турган сүйлөм", d: "Мааниси карама-каршы сөздөр" }, correct: "b" },
+            { id: 53, question: "Татаал сөздөр кандай жазылат?", options: { a: "Бирге гана", b: "Бирге, бөлөк, дефис аркылуу", c: "Бөлөк гана", d: "Апостроф аркылуу" }, correct: "b" },
+            { id: 54, question: "Кыскартылган сөздөр (Аббревиатура) катышкан катарды тапкыла:", options: { a: "Ата-эне, ага-ини", b: "КМУ, БУУ, КМШ", c: "Ак сакал, кара көз", d: "Топ-топ, үй-үй" }, correct: "b" },
+            { id: 55, question: "Кош сөздөр кайсылар?", options: { a: "Кечээ жакында, бала-чака, ата-эне", b: "Темир жол, айыл чарба", c: "Бектур, Атагелди", d: "АГАХК, УАК" }, correct: "a" },
+            { id: 56, question: "Тууранды сөздөр деген эмне?", options: { a: "Адамдын сезимин билдирет", b: "Жаратылыштагы үндөрдү, кыймыл-аракетти туурап айтылган сөздөр", c: "Буйрук берүүдо колдонулат", d: "Заттын атын билдирет" }, correct: "b" },
+            { id: 57, question: "Сырдык сөздөргө кайсылар кирет?", options: { a: "Күкүк, шарт, жалтыр", b: "Ой, кап, бали, пай-пай", c: "Кызыл, сары", d: "Мен, сен, ал" }, correct: "b" },
+            { id: 58, question: "Кызматчы сөздөр канчага бөлүнөт?", options: { a: "2 (жандооч, байламыта)", b: "3 (жандооч, байламта, бөлүкчө)", c: "4", d: "Кызматчы сөздөр бөлүнбөйт" }, correct: "b" },
+            { id: 59, question: "Орфография эмнени окутат?", options: { a: "Сөздөрдү туура айтууну", b: "Сөздөрдү туура жазуу эрежелерин", c: "Тыныш белгилерин коюуну", d: "Сөздүн маанисин" }, correct: "b" },
+            { id: 60, question: "Орфоэпия эмнени окутат?", options: { a: "Сөздөрдү туура айтуу эрежелерин", b: "Сөздөрдү туура жазууну", c: "Грамматиканы", d: "Тыныш белгилерин" }, correct: "a" },
+            { id: 61, question: "Синтаксис эмнени изилдейт?", options: { a: "Сөз айкашын жана сүйлөмдү", b: "Тыбыштарды жана тамгаларды", c: "Сөз маанилерин", d: "Туура жазууну" }, correct: "a" },
+            { id: 62, question: "Кыргыз тилиндеги басым адатта кайсы муунга түшөт?", options: { a: "Биринчи муунга", b: "Экинчи муунга", c: "Акыркы муунга", d: "Басым түшпөйт" }, correct: "c" },
+            { id: 63, question: "Уңгу деген эмне?", options: { a: "Сөздүн андан ары бөлүнбөгөн маанилүү бөлүгү", b: "Сөздүн мүчөсү", c: "Кошумча маани берүүчү бөлүк", d: "Сөздүн аягы" }, correct: "a" },
+            { id: 64, question: "Сөз жасоочу мүчөнү тапкыла:", options: { a: "-лар (китептер)", b: "-чы (жумушчу)", c: "-га (шаарга)", d: "-ны (баланы)" }, correct: "b" },
+            { id: 65, question: "Сөз өзгөртүүчү мүчө катышкан сөздү тапкыла:", options: { a: "Үйлөр", b: "Малчы", c: "Билим", d: "Өнөрпоз" }, correct: "a" },
+            { id: 66, question: "Жөнөкөй сүйлөм түзүлүшүнө карай кандай бөлүнөт?", options: { a: "Жай жана суроолуу", b: "Жалаң жана жайылма", c: "Толук жана кемтик", d: "Татаал жана жөнөкөй" }, correct: "b" },
+            { id: 67, question: "Каратма сөз деген эмне?", options: { a: "Сүйлөмдөгү негизги кыймыл-аракет", b: "Иштин ордун билдирген сөз", c: "Айтылган ойдун кимге багытталганын билдирген сөз", d: "Суроолуу сөз" }, correct: "c" },
+            { id: 68, question: "Каратма сөз катышкан сүйлөмдү тапкыла:", options: { a: "Бүгүн күн ачык.", b: "Ата, мен мектепке кеттим.", c: "Ал китепти тез окуду.", d: "Кап, жумушка кечиктим." }, correct: "b" },
+            { id: 69, question: "Киринди сөз деген эмне?", options: { a: "Сүйлөөчүнүн айтылган ойго болгон мамилесин билдирүүчү сөз", b: "Баш мүчөлөр", c: "Суроо маанисиндеги сөз", d: "Башка тилден кирген сөз" }, correct: "a" },
+            { id: 70, question: "Киринди сөз катышкан катарды тапкыла:", options: { a: "Менин оюмча, тилди кадырлоо керек.", b: "Эй бала, бери кел.", c: "Биз тоого бардык.", d: "Айлана абдан кооз экен." }, correct: "a" },
+            { id: 71, question: "Төл сөз деген эмне?", options: { a: "Башка бирөөнүн өзгөртүлбөй берилген сөзү", b: "Автордун өзүнүн сөзү", c: "Котормо сөз", d: "Жаңы сөздөр" }, correct: "a" },
+            { id: 72, question: "Автордун сөзү деген эмне?", options: { a: "Бөтөн сөздүн кимге таандык экенин билдирген автордун түшүндүрмөсү", b: "Диалект сөздөр", c: "Цитата", d: "Макал-лакаптар" }, correct: "a" },
+            { id: 73, question: "Татаал сүйлөмдөр канчага бөлүнөт?", options: { a: "2 (тең байланышкан, багыныңкы байланышкан)", b: "3", c: "4", d: "Бөлүнбөйт" }, correct: "a" },
+            { id: 74, question: "Улуу «Манас» эпосундагы Манастын чоролорунун башчысы ким?", options: { a: "Чубак", b: "Сыргак", c: "Алманбет", d: "Бакай" }, correct: "c" },
+            { id: 75, question: "Кыргыздын белгилүү жазуучусу Чыңгыз Айтматовдун алгачкы атактуу чыгармасы кайсы?", options: { a: "«Жамила»", b: "«Кылым карытар бир күн»", c: "«Ак кеме»", d: "«Бетме-бет»" }, correct: "a" },
+            { id: 76, question: "Ч. Айтматовдун «Ак кеме» повестиндеги баланын чоң атасынын аты ким?", options: { a: "Орозкул", b: "Момун", c: "Сейдакмат", d: "Кулбек" }, correct: "b" },
+            { id: 77, question: "Кыргыз улуттук валютасы — Сом кайсы жылы киргизилген?", options: { a: "1991-ж.", b: "1993-ж.", c: "1995-ж.", d: "2000-ж." }, correct: "b" },
+            { id: 78, question: "Кыргыз тили кайсы жылы Мамлекеттик тил статусун алган?", options: { a: "1989-жыл, 23-сентябрь", b: "1991-жыл, 31-август", c: "1993-жыл, 5-май", d: "2010-жыл, 7-апрель" }, correct: "a" },
+            { id: 79, question: "Баяндоочтун суроолору кайсылар?", options: { a: "Ким? Эмне?", b: "Кандай? Кайсы?", c: "Эмне кылды? Эмне болот?", d: "Канча? Нече?" }, correct: "c" },
+            { id: 80, question: "Ээнин асты кандай сызылат?", options: { a: "Бир түз сызык", b: "Эки түз сызык", c: "Толкун сызык", d: "Үзүк сызык" }, correct: "a" },
+            { id: 81, question: "Баяндоочтун алды кандай сызылат?", options: { a: "Бир түз сызык", b: "Эки түз сызык", c: "Толкун сызык", d: "Үзүк-үзүк сызык" }, correct: "b" },
+            { id: 82, question: "Толуктоочтун алды кандай сызылат?", options: { a: "Түз сызык", b: "Толкун сызык", c: "Үзүк-үзүк (пунктир) сызык", d: "Чекит-пунктир" }, correct: "c" },
+            { id: 83, question: "Жөнөкөй сүйлөмдө бир гана эмне болот?", options: { a: "Ээ болот", b: "Грамматикалык негиз (бир ээ/баяндооч жубу)", c: "Аныктооч", d: "Киринди сөз" }, correct: "b" },
+            { id: 84, question: "Ээрчишүү байланышы кайсы мүчөлөрдүн ортосунда болот?", options: { a: "Ээ менен баяндоочтун", b: "Аныктооч менен ээнин", c: "Баяндооч менен толуктоочтун", d: "Бышыктооч менен баяндоочтун" }, correct: "a" },
+            { id: 85, question: "Төмөнкүлөрдүн кайсынысы туруктуу сөз айкашы (фразеологизм)?", options: { a: "Кара куш", b: "Кабыргасы кайышуу", c: "Бийик тоо", d: "Кызыл китеп" }, correct: "b" },
+            { id: 86, question: "«Төбөсү көккө жетүү» дегендин мааниси эмне?", options: { a: "Абдан сүйүнүү", b: "Кайгыруу", c: "Узун болуу", d: "Ачуулануу" }, correct: "a" },
+            { id: 87, question: "«Кулагына лапша илүү» фразеологизминин мааниси:", options: { a: "Тамак берүү", b: "Алдоо, калп айтуу", c: "Угуу", d: "Жардам берүү" }, correct: "b" },
+            { id: 88, question: "«Кол кууштуруп отуруу» мааниси кандай?", options: { a: "Иштебей, бекер отуруу", b: "Саламдашуу", c: "Спорт менен ашыгуу", d: "Уктоо" }, correct: "a" },
+            { id: 89, question: "Жалпылама сөз деген эмне?", options: { a: "Бир өңчөй мүчөлөрдөн кийин же мурун келип, алардын маанисин жалпылап турган сөз", b: "Жөнөкөй зат атооч", c: "Антоним сөз", d: "Кыскартылган сөз" }, correct: "a" },
+            { id: 90, question: "Эки тутумдуу сүйлөмдө эмнелер катышат?", options: { a: "Ээси да, баяндоочу да бар сүйлөм", b: "Жалаң гана ээси бар", c: "Жалаң баяндоочу бар", d: "Айкындооч мүчөлөр гана" }, correct: "a" },
+            { id: 91, question: "Төмөнкү сөздөрдүн кайсынысы туура жазылган?", options: { a: "Тундук", b: "Түндүк", c: "Тундукь", d: "Түндүкк" }, correct: "b" },
+            { id: 92, question: "Кыргыз тилинде канча сөз түркүмү бар?", options: { a: "6", b: "9", c: "12", d: "10" }, correct: "c" },
+            { id: 93, question: "Кайсы сөз түркүмү өз алдынча суроого жооп бербейт жана маани билдирбейт?", options: { a: "Зат атооч", b: "Кызматчы сөздөр", c: "Этиш", d: "Сан атооч" }, correct: "b" },
+            { id: 94, question: "Бөлүкчөлөр (частицы) кайсылар?", options: { a: "Гана, эле, өтө, эң", b: "Жана, бирок, себеби", c: "Чейин, тууралуу, караганда", d: "Атаганат, ооба" }, correct: "a" },
+            { id: 95, question: "Байламталар (союзы) эмне үчүн кызмат кылат?", options: { a: "Сөздөрдү же сүйлөмдөрдү байланыштыруу үчүн", b: "Суроо берүү үчүн", c: "Кыймылды чектөө үчүн", d: "Эмоцияны билдирүү үчүн" }, correct: "a" },
+            { id: 96, question: "«Бирок, анткени менен, ошонсо да» — булар кайсы байламталар?", options: { a: "Каршылагыч байламталар", b: "Түзүүчү байламталар", c: "Себеп байламталар", d: "Шарттуу байламталар" }, correct: "a" },
+            { id: 97, question: "Пунктуация эмнени изилдейт?", options: { a: "Тыныш белгилердин коюлуш эрежелерин", b: "Туура сүйлөөнү", c: "Сөздөрдүн жасалышын", d: "Тамгалардын тарыхын" }, correct: "a" },
+            { id: 98, question: "Кайсы катардагы сөздөр баш тамга менен жазылышы керек?", options: { a: "Адам аттары, жер-суу аттары, мамлекеттер", b: "Жалпы зат атоочтор", c: "Этиштердин баары", d: "Кызматчы сөздөр" }, correct: "a" },
+            { id: 99, question: "«Ат башындай» деген сөз айкашындагы байланыштын түрү:", options: { a: "Башкаруу", b: "Таандык", c: "Жанашуу", d: "Ээрчишүү" }, correct: "c" },
+            { id: 100, question: "Лексикология эмнени изилдейт?", options: { a: "Тилдин сөздүк курамын (лексикасын)", b: "Тыбыштарды", c: "Сүйлөм мүчөлөрүн", d: "Туура жазууну" }, correct: "a" }
+        ];
+
+        // УНИКАЛДУУЛУКТУ САКТОО СИСТЕМАСЫ
+        // Биз бүткүл 100 суроодон турган көчүрмө "резервуар" түзөбүз
+        let availableQuestionsPool = [...allQuestionsBank]; 
+        
+        let currentCycleQuestions = []; 
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let timerInterval = null;
+        let timeLeft = 10 * 60; // 10 минут
+        let isAnswered = false;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressText = document.getElementById('progress-text');
+        const progressFill = document.getElementById('progress-fill');
+        const timerDisplay = document.getElementById('timer');
+        const remainingCountDisplay = document.getElementById('remaining-count');
+
+        // Баштапкы экрандагы сан
+        remainingCountDisplay.textContent = availableQuestionsPool.length;
+
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', showNext);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        function startQuiz() {
+            // Эгер базада 20дан аз суроо калса, базаны толук жаңылайбыз
+            if (availableQuestionsPool.length < 20) {
+                alert("Бардык 100 суроо ойнолуп бүттү! База кайрадан башынан жаңыланды.");
+                availableQuestionsPool = [...allQuestionsBank];
+            }
+
+            startScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            
+            // 1. Калган суроолордун пулун аралаштырабыз (Рандом)
+            availableQuestionsPool.sort(() => 0.5 - Math.random());
+            
+            // 2. СУНУШТАЛГАН ӨЗГӨЧӨЛҮК: Сплайс (splice) аркылуу базадан 20 суроону суруп алабыз.
+            // Бул суроолор жалпы пулдан өчүрүлөт жана кийинки циклде кайталанбайт!
+            currentCycleQuestions = availableQuestionsPool.splice(0, 20);
+            
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            timeLeft = 10 * 60; 
+            startTimer();
+            loadQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                let min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                let sec = (timeLeft % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${min}:${sec}`;
+                if (timeLeft <= 0) finishQuiz();
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            nextBtn.disabled = true; 
+            
+            const q = currentCycleQuestions[currentQuestionIndex];
+            
+            progressText.textContent = `Суроо ${currentQuestionIndex + 1} / 20`;
+            progressFill.style.width = `${((currentQuestionIndex + 1) / 20) * 100}%`;
+            questionText.textContent = q.question; 
+            
+            optionsContainer.innerHTML = '';
+            Object.entries(q.options).forEach(([key, value]) => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                btn.textContent = `${key.toUpperCase()}) ${value}`;
+                
+                btn.addEventListener('click', () => {
+                    if (isAnswered) return; 
+                    isAnswered = true;
+                    userAnswers[currentQuestionIndex] = key;
+                    
+                    if (key === q.correct) {
+                        btn.classList.add('correct-answer');
+                    } else {
+                        btn.classList.add('wrong-answer');
+                        highlightCorrectAnswer(q.correct);
+                    }
+                    
+                    disableAllOptions();
+                    nextBtn.disabled = false;
+                });
+                optionsContainer.appendChild(btn);
+            });
+
+            nextBtn.textContent = currentQuestionIndex === 19 ? 'Жыйынтыкка өтүү' : 'Кийинки суроо';
+        }
+
+        function highlightCorrectAnswer(correctKey) {
+            const buttons = optionsContainer.querySelectorAll('.option');
+            buttons.forEach(btn => {
+                if (btn.textContent.startsWith(correctKey.toUpperCase() + ')')) {
+                    btn.classList.add('correct-answer');
+                }
+            });
+        }
+
+        function disableAllOptions() {
+            const buttons = optionsContainer.querySelectorAll('.option');
+            buttons.forEach(btn => {
+                btn.classList.add('disabled');
+            });
+        }
+
+        function showNext() {
+            if (currentQuestionIndex < 19) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+
+            let correct = 0;
+            currentCycleQuestions.forEach((q, i) => {
+                if (userAnswers[i] === q.correct) correct++;
+            });
+
+            let percent = Math.round((correct / 20) * 100);
+            document.getElementById('score-percentage').textContent = `${percent}%`;
+            document.getElementById('score-absolute').textContent = `${correct} / 20`;
+            document.getElementById('stat-correct').textContent = correct;
+            document.getElementById('stat-wrong').textContent = 20 - correct;
+
+            const msg = document.getElementById('result-message');
+            if (percent >= 80) msg.textContent = "Эң сонун! Сиз сынактан өттүңүз.";
+            else if (percent >= 50) msg.textContent = "Жакшы, бирок дагы аракет кылуу керек.";
+            else msg.textContent = "Упай жетишсиз. Кайра даярданыңыз.";
+        }
+
+        function restartQuiz() {
+            resultScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            // Башкы экрандагы калган суроолордун санын жаңылоо
+            remainingCountDisplay.textContent = availableQuestionsPool.length;
+        }
+    </script>
+</body>
+</html>
